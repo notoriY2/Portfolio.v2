@@ -62,8 +62,8 @@ export default function Hero() {
 
             <div className="flex flex-col sm:flex-row gap-4 pt-2">
               <a
-                href="/assets/Potsane-Resume.pdf"
-                download="Potsane-Resume.pdf"
+                href="/assets/Mosa_Potsane_Resume.pdf"
+                download="Mosa_Potsane_Resume.pdf"
                 className="px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold tracking-wide rounded text-black bg-[#CE9635] transition-all duration-300 hover:shadow-[0_0_30px_rgba(206,150,53,0.5)] hover:scale-105 text-center"
                 style={{ fontFamily: "'Courier New', monospace" }}
               >

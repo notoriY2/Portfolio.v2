@@ -27,6 +27,7 @@ interface Project {
   tags: string[];
   github?: string;
   liveUrl?: string;
+  status?: 'live' | 'offline';
   gridSpan?: 'small' | 'medium' | 'large';
   documentation: {
     overview: string;
@@ -36,9 +37,9 @@ interface Project {
 
 const PROJECTS: Project[] = [
   // ==========================================
-  // WIX WEBSITES (7 TOTAL)
-  // ==========================================
-  {
+  // WIX WEBSITES (7 TOTAL)
+  // ==========================================
+  {
     id: 'notorious-y2',
     title: 'Notorious.Y2: AI-Powered Streetwear Commerce Platform',
     category: 'websites',
@@ -168,26 +169,14 @@ const PROJECTS: Project[] = [
     ]
   }
 },
-  
-  {
+  
+  {
   id: 'campus-care',
   title: 'Campus Care: Institutional Healthcare Management Platform',
   category: 'websites',
   description: 'Comprehensive full-stack clinical administration, patient data pipelines, and campus healthcare coordination system.',
   details: 'A sophisticated digital health platform designed specifically for educational institutions to streamline medical services for both students and staff. It unifies appointment scheduling, digital medical records, patient vitals tracking, and role-based administrative analytics into a secure, single-page dashboard application.',
-  images: [
-    '57.png',
-    '81.png',
-    '82.png',
-    '83.png',
-    '84.png',
-    '84.png',
-    '85.png',
-    '86.png',
-    '87.png',
-    '88.png',
-    '56.png'
-  ],
+  images: ["124.png", "132.png", "133.png", "125.png", "126.png", "127.png", "128.png", "129.png", "130.png", "131.png"],
   tags: [
     'React',
     'Supabase',
@@ -195,6 +184,7 @@ const PROJECTS: Project[] = [
     'Healthcare SaaS'
   ],
   liveUrl: 'https://campus-care.page.gd/',
+  status: 'offline',
   gridSpan: 'medium',
   documentation: {
     overview: 'Campus Care provides an integrated web ecosystem for campus clinics, streamlining clinical administration, optimizing patient data pipelines, and bridging communication gaps between campus patients and institutional healthcare providers.',
@@ -227,15 +217,16 @@ const PROJECTS: Project[] = [
     ]
   }
 },
-  {
+  {
   "id": "trackademy",
   "title": "Trackademy: Full-Stack Academic Management Platform",
   "category": "websites",
   "description": "Comprehensive student academic performance, course management, and automated exam eligibility system[cite: 1].",
   "details": "A sophisticated, lightweight SaaS platform designed for tertiary institutions to eliminate administrative silos[cite: 1]. It centralizes student registration, grade book entries, automated exam eligibility calculations against a strict 50% performance benchmark, and secure role-based dashboard metrics[cite: 1].",
-  "images": ["60.png", "72.png", "73.png", "74.png", "75.png", "76.png", "77.png", "78.png", "79.png", "80.png"],
+  "images": ['135.png', '136.png', '137.png', '138.png', '139.png', '140.png', '141.png', '145.png', '146.png', '147.png'],
   "tags": ["React", "Supabase", "TypeScript", "Academic SaaS"],
   "liveUrl": "https://trackademy-omega.vercel.app",
+  "status": "offline",
   "gridSpan": "large",
   "documentation": {
     "overview": "Trackademy is a single-page client application powered by a Supabase backend and a Postgres database layer. The platform automates data synchronization across institutional hierarchies—encompassing faculties, departments, and programs—while securely handling academic records, transcript generation, and role-based permissions.",
@@ -272,7 +263,7 @@ const PROJECTS: Project[] = [
     ]
   }
 },
-  {
+  {
   "id": "buddy",
   "title": "Buddy: Campus Social & Academic Management Ecosystem",
   "category": "websites",
@@ -498,6 +489,24 @@ const INITIAL_COUNT = 6;
           alt={project.title} 
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
         />
+
+        {/* Deployment Status Badge - always visible, not just on hover */}
+        {project.status === 'offline' && (
+          <div 
+            className="absolute top-2 right-2 sm:top-3 sm:right-3 flex items-center gap-1.5 px-2 py-1 rounded-full backdrop-blur-sm border font-mono text-[9px] uppercase tracking-widest"
+            style={{
+              backgroundColor: 'rgba(0,0,0,0.6)',
+              borderColor: 'rgba(239,68,68,0.5)',
+              color: '#f87171'
+            }}
+          >
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-500"></span>
+            </span>
+            Redeploying
+          </div>
+        )}
         
         {/* Hover Overlay Text */}
 {/* Determine if the container is small to apply tighter styling */}
@@ -646,9 +655,27 @@ const INITIAL_COUNT = 6;
 
               <div className="flex flex-wrap gap-4 pt-2">
                 {selectedProject.liveUrl && (
-                  <a href={selectedProject.liveUrl} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider px-4 py-2.5 rounded bg-[#CE9635] text-black hover:shadow-[0_0_15px_rgba(206,150,53,0.4)] transition-all font-mono">
-                    <ExternalLink size={14} /> Launch Live Site
-                  </a>
+                  selectedProject.status === 'offline' ? (
+                    <div 
+                      className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider px-4 py-2.5 rounded font-mono border border-dashed cursor-not-allowed select-none"
+                      style={{ 
+                        color: isDark ? '#9ca3af' : '#6b7280',
+                        borderColor: 'rgba(239,68,68,0.4)',
+                        backgroundColor: isDark ? 'rgba(239,68,68,0.06)' : 'rgba(239,68,68,0.05)'
+                      }}
+                      title="Redeploying — check back soon"
+                    >
+                      <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-60"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                      </span>
+                      Deployment Offline
+                    </div>
+                  ) : (
+                    <a href={selectedProject.liveUrl} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider px-4 py-2.5 rounded bg-[#CE9635] text-black hover:shadow-[0_0_15px_rgba(206,150,53,0.4)] transition-all font-mono">
+                      <ExternalLink size={14} /> Launch Live Site
+                    </a>
+                  )
                 )}
                 {selectedProject.github && (
                   <a href={selectedProject.github} target="_blank" rel="noreferrer" className={`flex items-center gap-2 text-xs font-bold uppercase tracking-wider px-4 py-2.5 rounded transition-all font-mono ${isDark ? 'bg-gray-800 text-gray-300 hover:bg-gray-700' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}>
