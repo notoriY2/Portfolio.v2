@@ -9,13 +9,25 @@ import {
   FileText, 
   Terminal, 
   Code2, 
-  Layers
+  Layers,
+  Lock,
+  Copy,
+  Check
 } from 'lucide-react';
 
 interface DocSection {
   heading: string;
   content: string[];
 }
+
+interface DemoAccount {
+  role: string;
+  identifierLabel: string; // e.g. 'email' or 'user no'
+  identifier: string;
+  password: string;
+}
+
+type ProjectStatus = 'live' | 'offline' | 'static';
 
 interface Project {
   id: string;
@@ -27,13 +39,24 @@ interface Project {
   tags: string[];
   github?: string;
   liveUrl?: string;
-  status?: 'live' | 'offline';
+  status?: ProjectStatus;
   gridSpan?: 'small' | 'medium' | 'large';
+  demoCredentials?: {
+    label: string;
+    accounts: DemoAccount[];
+  };
   documentation: {
     overview: string;
     sections: DocSection[];
   };
 }
+
+// Visual config for each deployment status
+const STATUS_STYLES: Record<ProjectStatus, { label: string; color: string; border: string; ping: boolean }> = {
+  live:    { label: 'Live',        color: '#4ade80', border: 'rgba(74,222,128,0.5)',  ping: true  },
+  static:  { label: 'Static Site', color: '#CE9635', border: 'rgba(206,150,53,0.5)',  ping: false },
+  offline: { label: 'Redeploying', color: '#f87171', border: 'rgba(239,68,68,0.5)',   ping: true  }
+};
 
 const PROJECTS: Project[] = [
   // ==========================================
@@ -48,9 +71,21 @@ const PROJECTS: Project[] = [
     images: ['22.png', '23.png', '24.png', '25.png', '26.png', '27.png', '28.png', '29.png', '30.png', '31.png', '32.png', '33.png', '34.png', '35.png', '36.png', '37.png', '38.png', '39.png', '40.png', '41.png', '42.png', '43.png', '44.png', '45.png', '46.png', '47.png', '48.png', '49.png', '50.png', '51.png', '52.png', '53.png', '54.png', '55.png', '56.png', '57.png', '58.png', '59.png', '60.png', '61.png', '62.png', '63.png', '64.png', '65.png', '66.png', '67.png'],
     tags: ['E-Commerce Platform', 'Supabase / PostgreSQL', 'Stripe Checkout', 'AI-Assisted Admin', 'Role-Based Dashboard'],
     liveUrl: 'https://notorious-y2-store.vercel.app/',
+    status: 'live',
     gridSpan: 'large',
+    demoCredentials: {
+      label: 'Admin Dashboard Access',
+      accounts: [
+        {
+          role: 'Admin',
+          identifierLabel: 'email',
+          identifier: 'mosapotsane16@gmail.com',
+          password: 'P0tsane'
+        }
+      ]
+    },
     documentation: {
-      overview: 'Notorious.Y2 is a full commerce stack: a scattered-layout "product floor" storefront up front, and a real operational back office behind it. The database (Supabase/PostgreSQL) enforces access with row-level security, keeps stock and sales counters in sync via triggers, and drives every admin report from live views rather than static numbers. Payments run through Stripe. A set of serverless edge functions add AI assistance throughout the admin experience — from writing product copy to running the support chat,',
+      overview: 'Notorious.Y2 is a full commerce stack: a scattered-layout "product floor" storefront up front, and a real operational back office behind it. The database (Supabase/PostgreSQL) enforces access with row-level security, keeps stock and sales counters in sync via triggers, and drives every admin report from live views rather than static numbers. Payments run through Stripe. A set of serverless edge functions add AI assistance throughout the admin experience — from writing product copy to running the support chat.',
       sections: [
         {
           heading: '1. Storefront & Shopping Experience',
@@ -97,269 +132,281 @@ const PROJECTS: Project[] = [
         }
       ]
     }
-},
+  },
   {
-  id: 'the-lighthouse-guest-house',
-  title: 'The Lighthouse Guest House: Heritage Hospitality Portal',
-  category: 'websites',
-  description: 'Heritage-styled guest house site with room comparison, rate estimation and WhatsApp-ready booking.',
-  details: 'A single-page hospitality platform for a family-run B&B in Colesberg, built around its 24+ years of Karoo hospitality. The site combines an editorial vintage design language with practical booking tools: a natural-language booking copilot, a live rate estimator, filterable rooms with side-by-side comparison, and an enquiry flow that hands off to email or WhatsApp.',
-  images: ['1.png', '2.png', '3.png', '4.png', '5.png', '6.png', '7.png', '8.png', '9.png', '10.png', '11.png', '12.png', '13.png', '14.png', '15.png', '16.png', '17.png', '18.png', '19.png', '20.png', '21.png'],
-  tags: ['Hospitality UI', 'Booking Copilot', 'Heritage Branding'],
-  liveUrl: 'https://your-lighthouse-guest-house-url.com', // TODO: replace with the deployed URL
-  gridSpan: 'small',
-  documentation: {
-    overview: 'Experience-focused layout designed to turn road-trippers on the N1 into overnight bookings. Integrates heritage storytelling, a 13-room inventory with smart filtering, transparent seasonal pricing, and a synchronized enquiry pipeline, all wrapped in a warm parchment and brass identity with a switchable midnight theme.',
-    sections: [
-      {
-        heading: '1. Brand Kit & Visual Identification',
-        content: [
-          'Adopted a vintage editorial profile pairing Playfair Display serif headings with Inter body text for a readable, heritage-inspired hospitality feel.',
-          'Built a warm palette of Parchment Cream (#FAF8F5) backgrounds, Charcoal (#1A1A1A) text and structure, and Antique Brass (#D4AF37) accents, supported by sepia, amber and Karoo-sunset gradient tokens.',
-          'Designed a custom SVG Lighthouse Emblem (tower, lantern room and light rays) that inherits its color from the surrounding theme and is reused in the navbar and footer.',
-          'Introduced a switchable Parchment / Midnight theme persisted across visits via Zustand, with custom shadows (vintage and brass-glow), hairline borders, letterpress and plaque-style buttons, and fade/slide animations.'
-        ]
-      },
-      {
-        heading: '2. Site Architecture & Content Layout Routing',
-        content: [
-          'Engineered a sticky 6-link navigation (Aesthetics, Our Rooms, Rates & Policies, Dining, Discover Colesberg, Contact) with smooth-scroll anchors, a "Check Availability" call-to-action, a theme toggle and a responsive mobile menu.',
-          'Hero Unit: Opens with "A Cozy Harbor in the Heart of the Historic Karoo", the location badge, a 24-years-of-hospitality banner, a "Reserve Your Stay" call-to-action and check-in/check-out pills.',
-          'Legacy & Recognition: A horizontally scrollable guestbook-style timeline covering the AA Superior status, Four-Star Grading, Regional Finalist recognition, and 24+ years of family-run hospitality.',
-          'Heritage Narrative: A book-style story panel with a philosophy pull-quote, alongside glass-case collectible cards such as Vintage Lighthouse Lanterns, Historic Colesberg Photographs and Antique Writing Desks.',
-          'Karoo Sky Widget: Live Colesberg weather from the Open-Meteo API, a canvas-drawn sunset countdown dial, and a constellation overlay that appears in midnight mode.'
-        ]
-      },
-      {
-        heading: '3. Gallery, Rooms & Journey Planning',
-        content: [
-          'Fragments of the House: An asymmetrical scrapbook gallery of 75 catalogued plates with category filters (Spaces & Light, Details, Landscapes, Gardens, Culinary), shuffle, show more/less pagination and a full-size preview modal.',
-          'Rooms & Suites: 13 distinct units, from the Honeymoon Suite to The Butterfly Cottage (sleeps 6), filterable by Honeymoon & Romance, Family, Solo & Business, and Private Garden categories.',
-          'Room Comparison Drawer: Side-by-side comparison of up to 4 rooms covering capacity, bed configuration, layout, outdoor setting and an amenity matrix.',
-          'N1 Route Planner: An interactive origin and destination tool (Johannesburg, Pretoria, Bloemfontein to Cape Town, Garden Route, Knysna and more) that totals distance and drive time, positioning Colesberg as the halfway stopover.'
-        ]
-      },
-      {
-        heading: '4. Booking Tools, Pricing & Policies',
-        content: [
-          'Booking Copilot: A natural-language parser that reads free-text trip descriptions to extract guest count, season, and preferences (family, honeymoon, garden, business), then ranks matching rooms with a confidence score and syncs the result to the global store.',
-          'Smart Rate Estimator: Calculates accommodation and breakfast totals by season, occupancy, number of nights and guest count. Rates run at R290 per person sharing, R500 for single occupancy in low season, and R65 per person for breakfast.',
-          'Itinerary Cart: A sticky "Your Karoo Journey" sidebar summarizing the chosen suite, breakfast, dining interests and suggested attractions.',
-          'Policy Ledger: Check-in 2:00 PM to 9:00 PM, check-out 10:00 AM, a visual cancellation matrix from 100% refund (4+ weeks) down to non-refundable (under 1 week), plus secure parking, DSTV and air-conditioning highlights.'
-        ]
-      },
-      {
-        heading: '5. Local Discovery, Conversion & Contact',
-        content: [
-          'Nearby Dining: Four walkable restaurants (Die Platterlander, Bordeaux Restaurant, JC\'s Pizzeria & Pub, Horse and Mill Pub) with a tabbed Culinary Concierge that adds dining interests directly to the guest\'s enquiry.',
-          'Discover Colesberg: Tabbed attraction categories covering history, archaeology, architecture, nature and water sports, including the Kemper Museum, Coleskop climb, Doornkloof Nature Reserve and the Gariep Dam.',
-          'Reservation Enquiry Form: Validated fields for name, email, arrival and departure dates, party size, preferred suite, breakfast option and special requests, dispatched through the guest\'s native mail client.',
-          'WhatsApp Closer: Auto-composes a formatted enquiry from the live booking state and opens it in WhatsApp. A mobile Express HUD offers tap-to-call, WhatsApp and copy-GPS shortcuts for travellers on the road.',
-          'Find Us & Footer: Embedded map, N1 directions from both town entrances, and a footer carrying the physical address at 40A Church Street, Colesberg, 9795, phone +27(0)51-753 0043, email reservations@karoolighthouse.co.za, PO Box 15, and Facebook and Instagram links.'
-        ]
-      },
-      {
-        heading: '6. Technology Stack',
-        content: [
-          'Built with React 18, TypeScript and Vite, styled with Tailwind CSS and a custom design-token configuration.',
-          'Global state (theme, cart, comparison, filters, parsed season) is managed with Zustand and partially persisted to local storage.',
-          'Icons from lucide-react, live weather from the Open-Meteo API, and canvas rendering for the sunset dial and star field.'
-        ]
-      }
-    ]
-  }
-},
-  
+    id: 'the-lighthouse-guest-house',
+    title: 'The Lighthouse Guest House: Heritage Hospitality Portal',
+    category: 'websites',
+    description: 'Heritage-styled guest house site with room comparison, rate estimation and WhatsApp-ready booking.',
+    details: 'A single-page hospitality platform for a family-run B&B in Colesberg, built around its 24+ years of Karoo hospitality. The site combines an editorial vintage design language with practical booking tools: a natural-language booking copilot, a live rate estimator, filterable rooms with side-by-side comparison, and an enquiry flow that hands off to email or WhatsApp.',
+    images: ['1.png', '2.png', '3.png', '4.png', '5.png', '6.png', '7.png', '8.png', '9.png', '10.png', '11.png', '12.png', '13.png', '14.png', '15.png', '16.png', '17.png', '18.png', '19.png', '20.png', '21.png'],
+    tags: ['Hospitality UI', 'Booking Copilot', 'Heritage Branding'],
+    liveUrl: 'https://your-lighthouse-guest-house-url.com', // TODO: replace with the deployed URL
+    status: 'static',
+    gridSpan: 'small',
+    documentation: {
+      overview: 'Experience-focused layout designed to turn road-trippers on the N1 into overnight bookings. Integrates heritage storytelling, a 13-room inventory with smart filtering, transparent seasonal pricing, and a synchronized enquiry pipeline, all wrapped in a warm parchment and brass identity with a switchable midnight theme.',
+      sections: [
+        {
+          heading: '1. Brand Kit & Visual Identification',
+          content: [
+            'Adopted a vintage editorial profile pairing Playfair Display serif headings with Inter body text for a readable, heritage-inspired hospitality feel.',
+            'Built a warm palette of Parchment Cream (#FAF8F5) backgrounds, Charcoal (#1A1A1A) text and structure, and Antique Brass (#D4AF37) accents, supported by sepia, amber and Karoo-sunset gradient tokens.',
+            'Designed a custom SVG Lighthouse Emblem (tower, lantern room and light rays) that inherits its color from the surrounding theme and is reused in the navbar and footer.',
+            'Introduced a switchable Parchment / Midnight theme persisted across visits via Zustand, with custom shadows (vintage and brass-glow), hairline borders, letterpress and plaque-style buttons, and fade/slide animations.'
+          ]
+        },
+        {
+          heading: '2. Site Architecture & Content Layout Routing',
+          content: [
+            'Engineered a sticky 6-link navigation (Aesthetics, Our Rooms, Rates & Policies, Dining, Discover Colesberg, Contact) with smooth-scroll anchors, a "Check Availability" call-to-action, a theme toggle and a responsive mobile menu.',
+            'Hero Unit: Opens with "A Cozy Harbor in the Heart of the Historic Karoo", the location badge, a 24-years-of-hospitality banner, a "Reserve Your Stay" call-to-action and check-in/check-out pills.',
+            'Legacy & Recognition: A horizontally scrollable guestbook-style timeline covering the AA Superior status, Four-Star Grading, Regional Finalist recognition, and 24+ years of family-run hospitality.',
+            'Heritage Narrative: A book-style story panel with a philosophy pull-quote, alongside glass-case collectible cards such as Vintage Lighthouse Lanterns, Historic Colesberg Photographs and Antique Writing Desks.',
+            'Karoo Sky Widget: Live Colesberg weather from the Open-Meteo API, a canvas-drawn sunset countdown dial, and a constellation overlay that appears in midnight mode.'
+          ]
+        },
+        {
+          heading: '3. Gallery, Rooms & Journey Planning',
+          content: [
+            'Fragments of the House: An asymmetrical scrapbook gallery of 75 catalogued plates with category filters (Spaces & Light, Details, Landscapes, Gardens, Culinary), shuffle, show more/less pagination and a full-size preview modal.',
+            'Rooms & Suites: 13 distinct units, from the Honeymoon Suite to The Butterfly Cottage (sleeps 6), filterable by Honeymoon & Romance, Family, Solo & Business, and Private Garden categories.',
+            'Room Comparison Drawer: Side-by-side comparison of up to 4 rooms covering capacity, bed configuration, layout, outdoor setting and an amenity matrix.',
+            'N1 Route Planner: An interactive origin and destination tool (Johannesburg, Pretoria, Bloemfontein to Cape Town, Garden Route, Knysna and more) that totals distance and drive time, positioning Colesberg as the halfway stopover.'
+          ]
+        },
+        {
+          heading: '4. Booking Tools, Pricing & Policies',
+          content: [
+            'Booking Copilot: A natural-language parser that reads free-text trip descriptions to extract guest count, season, and preferences (family, honeymoon, garden, business), then ranks matching rooms with a confidence score and syncs the result to the global store.',
+            'Smart Rate Estimator: Calculates accommodation and breakfast totals by season, occupancy, number of nights and guest count. Rates run at R290 per person sharing, R500 for single occupancy in low season, and R65 per person for breakfast.',
+            'Itinerary Cart: A sticky "Your Karoo Journey" sidebar summarizing the chosen suite, breakfast, dining interests and suggested attractions.',
+            'Policy Ledger: Check-in 2:00 PM to 9:00 PM, check-out 10:00 AM, a visual cancellation matrix from 100% refund (4+ weeks) down to non-refundable (under 1 week), plus secure parking, DSTV and air-conditioning highlights.'
+          ]
+        },
+        {
+          heading: '5. Local Discovery, Conversion & Contact',
+          content: [
+            'Nearby Dining: Four walkable restaurants (Die Platterlander, Bordeaux Restaurant, JC\'s Pizzeria & Pub, Horse and Mill Pub) with a tabbed Culinary Concierge that adds dining interests directly to the guest\'s enquiry.',
+            'Discover Colesberg: Tabbed attraction categories covering history, archaeology, architecture, nature and water sports, including the Kemper Museum, Coleskop climb, Doornkloof Nature Reserve and the Gariep Dam.',
+            'Reservation Enquiry Form: Validated fields for name, email, arrival and departure dates, party size, preferred suite, breakfast option and special requests, dispatched through the guest\'s native mail client.',
+            'WhatsApp Closer: Auto-composes a formatted enquiry from the live booking state and opens it in WhatsApp. A mobile Express HUD offers tap-to-call, WhatsApp and copy-GPS shortcuts for travellers on the road.',
+            'Find Us & Footer: Embedded map, N1 directions from both town entrances, and a footer carrying the physical address at 40A Church Street, Colesberg, 9795, phone +27(0)51-753 0043, email reservations@karoolighthouse.co.za, PO Box 15, and Facebook and Instagram links.'
+          ]
+        },
+        {
+          heading: '6. Technology Stack',
+          content: [
+            'Built with React 18, TypeScript and Vite, styled with Tailwind CSS and a custom design-token configuration.',
+            'Global state (theme, cart, comparison, filters, parsed season) is managed with Zustand and partially persisted to local storage.',
+            'Icons from lucide-react, live weather from the Open-Meteo API, and canvas rendering for the sunset dial and star field.'
+          ]
+        }
+      ]
+    }
+  },
+
   {
-  id: 'campus-care',
-  title: 'Campus Care: Institutional Healthcare Management Platform',
-  category: 'websites',
-  description: 'Comprehensive full-stack clinical administration, patient data pipelines, and campus healthcare coordination system.',
-  details: 'A sophisticated digital health platform designed specifically for educational institutions to streamline medical services for both students and staff. It unifies appointment scheduling, digital medical records, patient vitals tracking, and role-based administrative analytics into a secure, single-page dashboard application.',
-  images: ["124.png", "132.png", "133.png", "125.png", "126.png", "127.png", "128.png", "129.png", "130.png", "131.png"],
-  tags: [
-    'React',
-    'Supabase',
-    'TypeScript',
-    'Healthcare SaaS'
-  ],
-  liveUrl: 'https://campus-care.page.gd/',
-  status: 'offline',
-  gridSpan: 'medium',
-  documentation: {
-    overview: 'Campus Care provides an integrated web ecosystem for campus clinics, streamlining clinical administration, optimizing patient data pipelines, and bridging communication gaps between campus patients and institutional healthcare providers.',
-    sections: [
-      {
-        heading: '1. Technical Architecture & Database Framework',
-        content: [
-          'Frontend Architecture: Built on React, TypeScript, and styled with Tailwind CSS for highly scannable, responsive dashboard layouts featuring instant theme toggling (Light/Dark mode).',
-          'Backend Cloud Platform: Utilizes a relational database layer (Supabase/Postgres) to securely manage patient records, operational auditing, and real-time dashboard analytics updating.',
-          'Dynamic Schema Management: Features a built-in Database Management utility enabling administrators to construct system tables, define unique column inputs, assign data types (e.g., INT, VARCHAR), set field sizing, and enforce auto-incrementing primary keys directly from the client interface.'
-        ]
-      },
-      {
-        heading: '2. Role-Based Access Control (RBAC) & Portal Views',
-        content: [
-          'Granular Security Layer: Implements strict role classifications linked directly to authenticated accounts, establishing clear compliance boundaries for clinical data privacy.',
-          'Administrator Interface: Offers complete institutional oversight with a master metrics console mapping total platform users, active healthcare staff distributions, comprehensive system logs, and quick actions to onboard staff or register users.',
-          'Healthcare Staff Workspace: Features advanced clinical tracking panels allowing medical professionals to manage incoming patient queues, process professional medical referrals, issue medical prescriptions, and review treatment history.',
-          'Student & Staff Patient View: Provides a secure, confidential environment for campus members to book medical appointments, access health resources, configure personal profile information, and monitor ongoing historical logs.'
-        ]
-      },
-      {
-        heading: '3. Clinical Performance Logic & Medical Analytics',
-        content: [
-          'Vitals Tracking Engine: Houses a dynamic data collection component designed to document and track vital signs over time, logging physical parameters including height (cm), weight (kg), blood pressure (mmHg), heart rate/pulse (BPM), and body temperature (180°C).',
-          'Patient Identity Mapping: Relies on an integrated mapping matrix that perfectly binds clinical medical logs, historical prescriptions, and past consulting visits to unique institutional Staff or Student Numbers.',
-          'Centralized Practice Management: Coordinates critical healthcare sub-systems—including Patient Management, Appointment Scheduling, Medical Records tracking, Referral routing, and Medical Inventory Management—into a single, consolidated platform.'
-        ]
-      }
-    ]
-  }
-},
+    id: 'campus-care',
+    title: 'Campus Care: Institutional Healthcare Management Platform',
+    category: 'websites',
+    description: 'Comprehensive full-stack clinical administration, patient data pipelines, and campus healthcare coordination system.',
+    details: 'A sophisticated digital health platform designed specifically for educational institutions to streamline medical services for both students and staff. It unifies appointment scheduling, digital medical records, patient vitals tracking, and role-based administrative analytics into a secure, single-page dashboard application.',
+    images: ["124.png", "132.png", "133.png", "125.png", "126.png", "127.png", "128.png", "129.png", "130.png", "131.png"],
+    tags: [
+      'React',
+      'Supabase',
+      'TypeScript',
+      'Healthcare SaaS'
+    ],
+    liveUrl: 'https://campus-care.page.gd/',
+    status: 'offline',
+    gridSpan: 'medium',
+    documentation: {
+      overview: 'Campus Care provides an integrated web ecosystem for campus clinics, streamlining clinical administration, optimizing patient data pipelines, and bridging communication gaps between campus patients and institutional healthcare providers.',
+      sections: [
+        {
+          heading: '1. Technical Architecture & Database Framework',
+          content: [
+            'Frontend Architecture: Built on React, TypeScript, and styled with Tailwind CSS for highly scannable, responsive dashboard layouts featuring instant theme toggling (Light/Dark mode).',
+            'Backend Cloud Platform: Utilizes a relational database layer (Supabase/Postgres) to securely manage patient records, operational auditing, and real-time dashboard analytics updating.',
+            'Dynamic Schema Management: Features a built-in Database Management utility enabling administrators to construct system tables, define unique column inputs, assign data types (e.g., INT, VARCHAR), set field sizing, and enforce auto-incrementing primary keys directly from the client interface.'
+          ]
+        },
+        {
+          heading: '2. Role-Based Access Control (RBAC) & Portal Views',
+          content: [
+            'Granular Security Layer: Implements strict role classifications linked directly to authenticated accounts, establishing clear compliance boundaries for clinical data privacy.',
+            'Administrator Interface: Offers complete institutional oversight with a master metrics console mapping total platform users, active healthcare staff distributions, comprehensive system logs, and quick actions to onboard staff or register users.',
+            'Healthcare Staff Workspace: Features advanced clinical tracking panels allowing medical professionals to manage incoming patient queues, process professional medical referrals, issue medical prescriptions, and review treatment history.',
+            'Student & Staff Patient View: Provides a secure, confidential environment for campus members to book medical appointments, access health resources, configure personal profile information, and monitor ongoing historical logs.'
+          ]
+        },
+        {
+          heading: '3. Clinical Performance Logic & Medical Analytics',
+          content: [
+            'Vitals Tracking Engine: Houses a dynamic data collection component designed to document and track vital signs over time, logging physical parameters including height (cm), weight (kg), blood pressure (mmHg), heart rate/pulse (BPM), and body temperature (180°C).',
+            'Patient Identity Mapping: Relies on an integrated mapping matrix that perfectly binds clinical medical logs, historical prescriptions, and past consulting visits to unique institutional Staff or Student Numbers.',
+            'Centralized Practice Management: Coordinates critical healthcare sub-systems—including Patient Management, Appointment Scheduling, Medical Records tracking, Referral routing, and Medical Inventory Management—into a single, consolidated platform.'
+          ]
+        }
+      ]
+    }
+  },
   {
-  "id": "trackademy",
-  "title": "Trackademy: Full-Stack Academic Management Platform",
-  "category": "websites",
-  "description": "Comprehensive student academic performance, course management, and automated exam eligibility system[cite: 1].",
-  "details": "A sophisticated, lightweight SaaS platform designed for tertiary institutions to eliminate administrative silos[cite: 1]. It centralizes student registration, grade book entries, automated exam eligibility calculations against a strict 50% performance benchmark, and secure role-based dashboard metrics[cite: 1].",
-  "images": ['135.png', '136.png', '137.png', '138.png', '139.png', '140.png', '141.png', '145.png', '146.png', '147.png'],
-  "tags": ["React", "Supabase", "TypeScript", "Academic SaaS"],
-  "liveUrl": "https://trackademy-omega.vercel.app",
-  "status": "offline",
-  "gridSpan": "large",
-  "documentation": {
-    "overview": "Trackademy is a single-page client application powered by a Supabase backend and a Postgres database layer. The platform automates data synchronization across institutional hierarchies—encompassing faculties, departments, and programs—while securely handling academic records, transcript generation, and role-based permissions.",
-    "sections": [
-      {
-        "heading": "1. Technical Architecture & Database Framework",
-        "content": [
-          "Frontend Architecture: Built on React 18, TypeScript 5, Vite 5, and styled with Tailwind CSS 3.4 for responsive, high-density dashboard layouts.",
-          "Backend Cloud Platform: Utilizes Supabase (Postgres) to natively manage database relations, application authentication, storage buckets, and serverless edge functions.",
-          "Relational Data Schema: Structured tables map critical dependencies across profiles, students, lecturers, courses, course schedules, assessment types, student enrollments, and raw marks.",
-          "Real-time & Storage Pipelines: Leverages Supabase real-time subscriptions for instant grade and announcement updates, with secure storage buckets hosting file resources and transcript PDFs.",
-          "Local Deployment Controls: Maintained via standard node package workflows, executing production previews natively through 'npm run build' and 'npm run preview' cycles."
-        ]
-      },
-      {
-        "heading": "2. Role-Based Access Control (RBAC) & Portals",
-        "content": [
-          "Granular Security Layer: Implements strict role classifications linked directly to Supabase Auth profiles, establishing clear data boundaries for four targeted institutional access levels.",
-          "Administrator Interface: Full master system access to register students, configure courses, set up academic structures (faculties/departments), assign lecturers, track system-wide trends, and export records.",
-          "Lecturer Dashboard: Streamlined academic workspaces allowing professors to create dynamic assessment weights, manage class materials, execute bulk grade updates, and generate performance reports.",
-          "Student Portal: Empowering student views to track enrollment coursework totals, check ongoing eligibility status, view weekly class schedules, set personal study goals, and download official transcript PDFs.",
-          "Exam Officer Configuration: Specialized workspace permissions designed to perform automated eligibility audits, audit compliance tracks, and manage final exam session schedules."
-        ]
-      },
-      {
-        "heading": "3. Academic Automation Logic & Eligibility Engines",
-        "content": [
-          "50% Eligibility Threshold: Features a built-in automated verification calculation engine that checks semester assessment averages against the mandatory 50% institution benchmark required for final exam qualification.",
-          "Weighted Score System: Automatically processes disparate weights across multiple assessment types—such as quizzes, assignments, tests, and research projects—to yield accurate real-time coursework totals.",
-          "Centralized Data Sync: Eliminates paper silos through instantaneous data sync, ensuring that updates to marks or attendance sheets instantly adjust a student's standing and GPA across portals.",
-          "Serverless Export Engine: Utilizes the client-side environment and server-side secret keys to dynamically assemble and render administrative data matrices into clean, downloadable CSV or PDF documents."
-        ]
-      }
-    ]
-  }
-},
+    id: 'trackademy',
+    title: 'Trackademy: Full-Stack Academic Management Platform',
+    category: 'websites',
+    description: 'Comprehensive student academic performance, course management, and automated exam eligibility system.',
+    details: 'A sophisticated, lightweight SaaS platform designed for tertiary institutions to eliminate administrative silos. It centralizes student registration, grade book entries, automated exam eligibility calculations against a strict 50% performance benchmark, and secure role-based dashboard metrics.',
+    images: ['135.png', '136.png', '137.png', '138.png', '139.png', '140.png', '141.png', '145.png', '146.png', '147.png'],
+    tags: ['React', 'Supabase', 'TypeScript', 'Academic SaaS'],
+    liveUrl: 'https://trackademy-omega.vercel.app',
+    status: 'live',
+    gridSpan: 'large',
+    demoCredentials: {
+      label: 'Demo Login (for testing)',
+      accounts: [
+        {
+          role: 'Student',
+          identifierLabel: 'user no',
+          identifier: '202502664',
+          password: '202502664@spu123'
+        },
+        {
+          role: 'Lecturer',
+          identifierLabel: 'user no',
+          identifier: '202302664',
+          password: '202302664@spu123'
+        },
+        {
+          role: 'Admin',
+          identifierLabel: 'user no',
+          identifier: 'ADM001',
+          password: 'admin123'
+        }
+      ]
+    },
+    documentation: {
+      overview: 'Trackademy is a single-page client application powered by a Supabase backend and a Postgres database layer. The platform automates data synchronization across institutional hierarchies—encompassing faculties, departments, and programs—while securely handling academic records, transcript generation, and role-based permissions.',
+      sections: [
+        {
+          heading: '1. Technical Architecture & Database Framework',
+          content: [
+            'Frontend Architecture: Built on React 18, TypeScript 5, Vite 5, and styled with Tailwind CSS 3.4 for responsive, high-density dashboard layouts.',
+            'Backend Cloud Platform: Utilizes Supabase (Postgres) to natively manage database relations, application authentication, storage buckets, and serverless edge functions.',
+            'Relational Data Schema: Structured tables map critical dependencies across profiles, students, lecturers, courses, course schedules, assessment types, student enrollments, and raw marks.',
+            'Real-time & Storage Pipelines: Leverages Supabase real-time subscriptions for instant grade and announcement updates, with secure storage buckets hosting file resources and transcript PDFs.',
+            'Local Deployment Controls: Maintained via standard node package workflows, executing production previews natively through \'npm run build\' and \'npm run preview\' cycles.'
+          ]
+        },
+        {
+          heading: '2. Role-Based Access Control (RBAC) & Portals',
+          content: [
+            'Granular Security Layer: Implements strict role classifications linked directly to Supabase Auth profiles, establishing clear data boundaries for four targeted institutional access levels.',
+            'Administrator Interface: Full master system access to register students, configure courses, set up academic structures (faculties/departments), assign lecturers, track system-wide trends, and export records.',
+            'Lecturer Dashboard: Streamlined academic workspaces allowing professors to create dynamic assessment weights, manage class materials, execute bulk grade updates, and generate performance reports.',
+            'Student Portal: Empowering student views to track enrollment coursework totals, check ongoing eligibility status, view weekly class schedules, set personal study goals, and download official transcript PDFs.',
+            'Exam Officer Configuration: Specialized workspace permissions designed to perform automated eligibility audits, audit compliance tracks, and manage final exam session schedules.'
+          ]
+        },
+        {
+          heading: '3. Academic Automation Logic & Eligibility Engines',
+          content: [
+            '50% Eligibility Threshold: Features a built-in automated verification calculation engine that checks semester assessment averages against the mandatory 50% institution benchmark required for final exam qualification.',
+            'Weighted Score System: Automatically processes disparate weights across multiple assessment types—such as quizzes, assignments, tests, and research projects—to yield accurate real-time coursework totals.',
+            'Centralized Data Sync: Eliminates paper silos through instantaneous data sync, ensuring that updates to marks or attendance sheets instantly adjust a student\'s standing and GPA across portals.',
+            'Serverless Export Engine: Utilizes the client-side environment and server-side secret keys to dynamically assemble and render administrative data matrices into clean, downloadable CSV or PDF documents.'
+          ]
+        }
+      ]
+    }
+  },
   {
-  "id": "buddy",
-  "title": "Buddy: Campus Social & Academic Management Ecosystem",
-  "category": "websites",
-  "description": "A comprehensive one-stop web platform blending institutional academic tracking with integrated student community social layers.",
-  "details": "A dynamic full-stack SaaS solution engineered for universities to manage academic lifecycles and peer interactions concurrently. The system unifies student and staff registration, course and department administration, real-time classroom attendance logging, grading metrics computation, and a rich social networking ecosystem featuring posts, groups, and real-time interaction feeds.",
-  "images": [
-    "68.png",
-    "69.png",
-    "70.png",
-    "71.png",
-    "72.png",
-    "73.png",
-    "74.png",
-    "75.png",
-    "76.png",
-    "77.png",
-    "78.png",
-    "79.png",
-    "80.png",
-    "81.png",
-    "82.png",
-    "83.png",
-    "84.png",
-    "85.png",
-    "86.png",
-    "87.png",
-    "88.png",
-    "89.png",
-    "90.png",
-    "91.png",
-    "92.png",
-    "93.png",
-    "94.png",
-    "95.png",
-    "96.png",
-    "97.png",
-    "98.png",
-    "99.png",
-    "100.png",
-    "101.png",
-    "102.png",
-    "103.png",
-    "104.png",
-    "105.png",
-    "106.png",
-    "107.png",
-    "108.png"
-  ],
-  "tags": [
-    "React",
-    "Node.js",
-    "SQL/PostgreSQL",
-    "Tailwind CSS",
-    "Academic SaaS"
-  ],
-  "liveUrl": "https://buddysocials.page.gd/",
-  "gridSpan": "medium",
-  "documentation": {
-    "overview": "Buddy bridges the gap between cold administrative systems and active student life by running dual operational hubs—an Academics Management Portal and an interactive Social Media Feed—served from a centralized database architecture to ensure unified user profiles across all interfaces.",
-    "sections": [
-      {
-        "heading": "1. Landing Interface & Public Gateway",
-        "content": [
-          "Brand Concept: The platform acts as a consolidated digital ecosystem with the foundational motto: 'It's not just Social Media, It's Buddy'.",
-          "Public Portal Access: Features clear routing split pathways designed to separate standard student workflows from dedicated administrative/faculty system gateways.",
-          "Custom Theme Brand Assets: Showcases a high-contrast design containing contextual brand variations and dynamic asset configurations built around a distinct owl mascot emblem."
-        ]
-      },
-      {
-        "heading": "2. Social Media Network & Community Layer",
-        "content": [
-          "Interactive Social Feed: The interface provides students with a personal social space to publish media-rich updates, share thoughts, and communicate with peers.",
-          "Peer Relations Engine: Incorporates a comprehensive network request pipeline enabling mutual friend discoveries, profile updates, and inbound connection approvals or declines.",
-          "Group & Sub-Community Spaces: Empowers campus members to form dedicated collaborative spaces, manage independent group page feeds, join interests (e.g., 'Red Devils'), and share chronological timeline stories."
-        ]
-      },
-      {
-        "heading": "3. Faculty & Student Management Dashboards",
-        "content": [
-          "Master Administrative View: The master metrics console displays aggregate institutional KPIs—including Total Users, active Students, Staff members, running Courses, and created Departments.",
-          "Course Directory Logs: Offers a scaled dashboard matrix tracking course distribution parameters across standard internal structural branches.",
-          "Dynamic Directory Registries: Houses searchable tabular structures mapping verified student parameters—encompassing full legal names, assigned student numbers, academic levels, registered faculties, and department majors (e.g., Advanced ICT Diploma, Data Science, Applications Development)."
-        ]
-      },
-      {
-        "heading": "4. Academic Automation & Analytics Tools",
-        "content": [
-          "Automated GPA Compute Engine: Contains a specialized processing panel that filters specific academic years, program sessions, levels, and faculties to compute clean cumulative grade point averages directly.",
-          "Official Grade Book Transcripts: Generates historical semester score matrices mapping course codes (e.g., NAAA732), academic weights, achieved raw scores, letter grades, and total grade point computations.",
-          "Real-Time Attendance Monitoring: Integrates an automated classroom attendance tracker displaying graphical donut chart distributions that break down percentage ratios of 'Present' versus 'Absent' status.",
-          "Institutional Scheduling System: Features an interactive monthly calendar framework tied to a custom schedule form where users input class titles, descriptors, and accurate start/end timestamps."
-        ]
-      }
-    ]
-  }
-},
+    id: 'buddy',
+    title: 'Buddy: Campus Social & Academic Management Ecosystem',
+    category: 'websites',
+    description: 'A comprehensive one-stop web platform blending institutional academic tracking with integrated student community social layers.',
+    details: 'A dynamic full-stack SaaS solution engineered for universities to manage academic lifecycles and peer interactions concurrently. The system unifies student and staff registration, course and department administration, real-time classroom attendance logging, grading metrics computation, and a rich social networking ecosystem featuring posts, groups, and real-time interaction feeds.',
+    images: [
+      '68.png', '69.png', '70.png', '71.png', '72.png', '73.png', '74.png', '75.png', '76.png', '77.png',
+      '78.png', '79.png', '80.png', '81.png', '82.png', '83.png', '84.png', '85.png', '86.png', '87.png',
+      '88.png', '89.png', '90.png', '91.png', '92.png', '93.png', '94.png', '95.png', '96.png', '97.png',
+      '98.png', '99.png', '100.png', '101.png', '102.png', '103.png', '104.png', '105.png', '106.png',
+      '107.png', '108.png'
+    ],
+    tags: [
+      'React',
+      'Node.js',
+      'SQL/PostgreSQL',
+      'Tailwind CSS',
+      'Academic SaaS'
+    ],
+    liveUrl: 'https://buddysocials.page.gd/',
+    status: 'live',
+    gridSpan: 'medium',
+    demoCredentials: {
+      label: 'Demo Login (for testing)',
+      accounts: [
+        {
+          role: 'Student',
+          identifierLabel: 'email',
+          identifier: '202402664@buddy.ac.za',
+          password: '202402664@buddy.123'
+        },
+        {
+          role: 'Admin',
+          identifierLabel: 'email',
+          identifier: '202202664@buddy.ac.za',
+          password: 'mosa123'
+        },
+        {
+          role: 'Lecturer',
+          identifierLabel: 'email',
+          identifier: '202204500@buddy.ac.za',
+          password: 'mothibi123'
+        }
+      ]
+    },
+    documentation: {
+      overview: 'Buddy bridges the gap between cold administrative systems and active student life by running dual operational hubs—an Academics Management Portal and an interactive Social Media Feed—served from a centralized database architecture to ensure unified user profiles across all interfaces.',
+      sections: [
+        {
+          heading: '1. Landing Interface & Public Gateway',
+          content: [
+            'Brand Concept: The platform acts as a consolidated digital ecosystem with the foundational motto: \'It\'s not just Social Media, It\'s Buddy\'.',
+            'Public Portal Access: Features clear routing split pathways designed to separate standard student workflows from dedicated administrative/faculty system gateways.',
+            'Custom Theme Brand Assets: Showcases a high-contrast design containing contextual brand variations and dynamic asset configurations built around a distinct owl mascot emblem.'
+          ]
+        },
+        {
+          heading: '2. Social Media Network & Community Layer',
+          content: [
+            'Interactive Social Feed: The interface provides students with a personal social space to publish media-rich updates, share thoughts, and communicate with peers.',
+            'Peer Relations Engine: Incorporates a comprehensive network request pipeline enabling mutual friend discoveries, profile updates, and inbound connection approvals or declines.',
+            'Group & Sub-Community Spaces: Empowers campus members to form dedicated collaborative spaces, manage independent group page feeds, join interests (e.g., \'Red Devils\'), and share chronological timeline stories.'
+          ]
+        },
+        {
+          heading: '3. Faculty & Student Management Dashboards',
+          content: [
+            'Master Administrative View: The master metrics console displays aggregate institutional KPIs—including Total Users, active Students, Staff members, running Courses, and created Departments.',
+            'Course Directory Logs: Offers a scaled dashboard matrix tracking course distribution parameters across standard internal structural branches.',
+            'Dynamic Directory Registries: Houses searchable tabular structures mapping verified student parameters—encompassing full legal names, assigned student numbers, academic levels, registered faculties, and department majors (e.g., Advanced ICT Diploma, Data Science, Applications Development).'
+          ]
+        },
+        {
+          heading: '4. Academic Automation & Analytics Tools',
+          content: [
+            'Automated GPA Compute Engine: Contains a specialized processing panel that filters specific academic years, program sessions, levels, and faculties to compute clean cumulative grade point averages directly.',
+            'Official Grade Book Transcripts: Generates historical semester score matrices mapping course codes (e.g., NAAA732), academic weights, achieved raw scores, letter grades, and total grade point computations.',
+            'Real-Time Attendance Monitoring: Integrates an automated classroom attendance tracker displaying graphical donut chart distributions that break down percentage ratios of \'Present\' versus \'Absent\' status.',
+            'Institutional Scheduling System: Features an interactive monthly calendar framework tied to a custom schedule form where users input class titles, descriptors, and accurate start/end timestamps.'
+          ]
+        }
+      ]
+    }
+  },
 
   {
     id: 'spu-sportswear',
@@ -370,7 +417,8 @@ const PROJECTS: Project[] = [
     images: ['109.png', '110.png', '111.png', '112.png', '113.png', '114.png', '115.png', '116.png', '117.png', '118.png', '119.png', '120.png', '121.png', '122.png', '123.png'],
     tags: ['E-Commerce Grid', 'Merchandise UI', 'Sports Branding'],
     liveUrl: 'https://spu-united.netlify.app/',
-    gridSpan: 'small', // Swapped from medium to small
+    status: 'live',
+    gridSpan: 'small',
     documentation: {
       overview: 'A conversion-focused merchandise layout built to capture fan engagement and translate club loyalty into retail sales. Combines striking atmospheric branding with a highly legible catalog structure.',
       sections: [
@@ -413,6 +461,8 @@ export default function Showcase() {
   const [showAll, setShowAll] = useState<boolean>(false);
   // Track whether the expanded lightbox view is open
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  // Track which demo-credential field was most recently copied
+  const [copiedField, setCopiedField] = useState<string | null>(null);
 
   useEffect(() => {
     setCurrentImageIndex(0);
@@ -422,8 +472,14 @@ export default function Showcase() {
     return new URL(`../assets/${filename}`, import.meta.url).href;
   };
 
+  const handleCopyCredential = (text: string, field: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedField(field);
+    setTimeout(() => setCopiedField(null), 1500);
+  };
+
   const filteredProjects = PROJECTS;
-const INITIAL_COUNT = 6;
+  const INITIAL_COUNT = 6;
   const visibleProjects = showAll ? filteredProjects : filteredProjects.slice(0, INITIAL_COUNT);
 
   const getGridClass = (span?: string) => {
@@ -472,65 +528,73 @@ const INITIAL_COUNT = 6;
         </div>
 
         {/* Masonry Grid */}
-<div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 auto-rows-max gap-4 lg:gap-6">
-  {visibleProjects.map(project => {
-    // Dynamically assign aspect ratio based on category
-    const aspectClass = project.category === 'websites' ? 'aspect-video' : 'aspect-square';
+        <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 auto-rows-max gap-4 lg:gap-6">
+          {visibleProjects.map(project => {
+            // Dynamically assign aspect ratio based on category
+            const aspectClass = project.category === 'websites' ? 'aspect-video' : 'aspect-square';
+            const statusStyle = project.status ? STATUS_STYLES[project.status] : null;
 
-    return (
-      <div 
-        key={project.id} 
-        className={`group relative overflow-hidden cursor-pointer transition-all duration-300 rounded-xl hover:shadow-[0_0_30px_rgba(206,150,53,0.3)] hover:-translate-y-1 ${getGridClass(project.gridSpan)} ${aspectClass}`} 
-        onClick={() => setSelectedProject(project)} 
-        style={{ backgroundColor: isDark ? '#121212' : '#ffffff' }} 
-      >
-        <img 
-          src={getAssetUrl(project.images[0])} 
-          alt={project.title} 
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
-        />
+            return (
+              <div 
+                key={project.id} 
+                className={`group relative overflow-hidden cursor-pointer transition-all duration-300 rounded-xl hover:shadow-[0_0_30px_rgba(206,150,53,0.3)] hover:-translate-y-1 ${getGridClass(project.gridSpan)} ${aspectClass}`} 
+                onClick={() => setSelectedProject(project)} 
+                style={{ backgroundColor: isDark ? '#121212' : '#ffffff' }} 
+              >
+                <img 
+                  src={getAssetUrl(project.images[0])} 
+                  alt={project.title} 
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                />
 
-        {/* Deployment Status Badge - always visible, not just on hover */}
-        {project.status === 'offline' && (
-          <div 
-            className="absolute top-2 right-2 sm:top-3 sm:right-3 flex items-center gap-1.5 px-2 py-1 rounded-full backdrop-blur-sm border font-mono text-[9px] uppercase tracking-widest"
-            style={{
-              backgroundColor: 'rgba(0,0,0,0.6)',
-              borderColor: 'rgba(239,68,68,0.5)',
-              color: '#f87171'
-            }}
-          >
-            <span className="relative flex h-1.5 w-1.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-500"></span>
-            </span>
-            Redeploying
-          </div>
-        )}
-        
-        {/* Hover Overlay Text */}
-{/* Determine if the container is small to apply tighter styling */}
-<div className={`absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/10 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end ${project.gridSpan === 'small' ? 'p-3' : 'p-6'}`}>
-  
-  <p className={`font-mono text-[#CE9635] uppercase tracking-[0.2em] ${project.gridSpan === 'small' ? 'text-[8px] mb-0.5' : 'text-[10px] mb-2'}`}>
-    // {project.category}
-  </p>
-  
-  <h3 className={`font-bold text-white leading-tight ${project.gridSpan === 'small' ? 'text-xs mb-1' : 'text-lg mb-2'}`} style={{ fontFamily: "'Courier New', monospace" }}>
-    {project.title}
-  </h3>
-  
-  {/* Only show the description if the container is not 'small' to prevent overflow */}
-  {project.gridSpan !== 'small' && (
-    <p className="text-xs text-gray-300 leading-snug line-clamp-2">
-      {project.description}
-    </p>
-  )}
-</div>
-      </div>
-    );
-  })}
-</div>
+                {/* Deployment Status Badge - always visible, not just on hover */}
+                {statusStyle && (
+                  <div 
+                    className="absolute top-2 right-2 sm:top-3 sm:right-3 flex items-center gap-1.5 px-2 py-1 rounded-full backdrop-blur-sm border font-mono text-[9px] uppercase tracking-widest"
+                    style={{
+                      backgroundColor: 'rgba(0,0,0,0.6)',
+                      borderColor: statusStyle.border,
+                      color: statusStyle.color
+                    }}
+                  >
+                    <span className="relative flex h-1.5 w-1.5">
+                      {statusStyle.ping && (
+                        <span 
+                          className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
+                          style={{ backgroundColor: statusStyle.color }}
+                        ></span>
+                      )}
+                      <span 
+                        className="relative inline-flex rounded-full h-1.5 w-1.5"
+                        style={{ backgroundColor: statusStyle.color }}
+                      ></span>
+                    </span>
+                    {statusStyle.label}
+                  </div>
+                )}
+                
+                {/* Hover Overlay Text */}
+                <div className={`absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/10 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end ${project.gridSpan === 'small' ? 'p-3' : 'p-6'}`}>
+                  
+                  <p className={`font-mono text-[#CE9635] uppercase tracking-[0.2em] ${project.gridSpan === 'small' ? 'text-[8px] mb-0.5' : 'text-[10px] mb-2'}`}>
+                    // {project.category}
+                  </p>
+                  
+                  <h3 className={`font-bold text-white leading-tight ${project.gridSpan === 'small' ? 'text-xs mb-1' : 'text-lg mb-2'}`} style={{ fontFamily: "'Courier New', monospace" }}>
+                    {project.title}
+                  </h3>
+                  
+                  {/* Only show the description if the container is not 'small' to prevent overflow */}
+                  {project.gridSpan !== 'small' && (
+                    <p className="text-xs text-gray-300 leading-snug line-clamp-2">
+                      {project.description}
+                    </p>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
 
         {/* Pagination Trigger */}
         {filteredProjects.length > INITIAL_COUNT && (
@@ -551,189 +615,286 @@ const INITIAL_COUNT = 6;
       </div>
 
       {/* Project Detail Popover Modal */}
-{selectedProject && (
-  <>
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-      <div 
-        className="relative w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-2xl shadow-2xl transition-all duration-300"
-        style={{ backgroundColor: isDark ? '#0a0a0a' : '#ffffff' }}
-      >
-        {/* Header Control Panel */}
-        <div 
-          className="sticky top-0 z-10 px-6 py-4 flex justify-between items-center"
-          style={{ backgroundColor: isDark ? '#0d0d0d' : '#f9f9f9' }}
-        >
-          <h3 
-            className="text-md font-bold uppercase tracking-wider flex items-center gap-2"
-            style={{ fontFamily: "'Courier New', monospace", color: isDark ? '#CE9635' : '#8a6323' }}
-          >
-            <Terminal size={16} /> COMPONENT_PREVIEW // {selectedProject.id}
-          </h3>
-          <button 
-            onClick={() => setSelectedProject(null)}
-            className={`p-1.5 rounded-full transition-colors cursor-pointer ${isDark ? 'text-gray-400 hover:bg-gray-900 hover:text-white' : 'text-gray-600 hover:bg-gray-200 hover:text-black'}`}
-          >
-            <X size={20} />
-          </button>
-        </div>
-
-        <div className="overflow-y-auto max-h-[calc(90vh-72px)] p-6 sm:p-8 space-y-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-            {/* Immersive Image Rotator Container */}
-            <div className="space-y-3">
+      {selectedProject && (
+        <>
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+            <div 
+              className="relative w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-2xl shadow-2xl transition-all duration-300"
+              style={{ backgroundColor: isDark ? '#0a0a0a' : '#ffffff' }}
+            >
+              {/* Header Control Panel */}
               <div 
-                className="relative rounded-xl overflow-hidden flex items-center justify-center w-full cursor-pointer group"
-                style={{ backgroundColor: isDark ? '#121212' : '#ffffff' }}
-                onClick={() => setIsLightboxOpen(true)}
+                className="sticky top-0 z-10 px-6 py-4 flex justify-between items-center"
+                style={{ backgroundColor: isDark ? '#0d0d0d' : '#f9f9f9' }}
               >
-                <img 
-                  src={getAssetUrl(selectedProject.images[currentImageIndex])} 
-                  alt={`${selectedProject.title} view`} 
-                  className="w-full h-auto object-contain" 
-                />
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20">
-                  <span className="text-white text-xs font-mono bg-black/50 px-3 py-1 rounded">CLICK TO EXPAND</span>
-                </div>
-                
-                {selectedProject.images.length > 1 && (
-                  <>
-                    <button 
-                      // FIX: Passing 'e' to the handler
-                      onClick={(e) => handlePrevImage(e)}
-                      className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/70 text-white hover:bg-[#CE9635] hover:text-black transition-all cursor-pointer"
-                    >
-                      <ChevronLeft size={16} />
-                    </button>
-                    <button 
-                      // FIX: Passing 'e' to the handler
-                      onClick={(e) => handleNextImage(e)}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/70 text-white hover:bg-[#CE9635] hover:text-black transition-all cursor-pointer"
-                    >
-                      <ChevronRight size={16} />
-                    </button>
-                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 px-2.5 py-1 rounded-full bg-black/80 text-[10px] font-mono text-gray-300 tracking-widest">
-                      {currentImageIndex + 1} / {selectedProject.images.length}
-                    </div>
-                  </>
-                )}
-              </div>
-
-              {/* Thumbnails */}
-              {selectedProject.images.length > 1 && (
-                <div className="flex gap-2 overflow-x-auto py-1">
-                  {selectedProject.images.map((img, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => setCurrentImageIndex(idx)}
-                      className={`relative w-16 h-12 rounded-lg overflow-hidden flex-shrink-0 transition-all ${currentImageIndex === idx ? 'ring-2 ring-[#CE9635] scale-95' : 'opacity-60 hover:opacity-100'}`}
-                      style={{ backgroundColor: isDark ? '#121212' : '#ffffff' }}
-                    >
-                      <img src={getAssetUrl(img)} alt="" className="w-full h-full object-cover" />
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Details Panel */}
-            <div className="space-y-6">
-              <div>
-                <span className="text-[10px] font-mono uppercase tracking-widest text-[#CE9635]">[{selectedProject.category}]</span>
-                <h4 className="text-2xl font-bold tracking-tight mt-1" style={{ fontFamily: "'Courier New', monospace", color: isDark ? '#ffffff' : '#000000' }}>
-                  {selectedProject.title}
-                </h4>
-              </div>
-              <p className="text-sm leading-relaxed" style={{ color: isDark ? '#d1d5db' : '#222222' }}>{selectedProject.details}</p>
-              
-              <div className="flex flex-wrap gap-2">
-                {selectedProject.tags.map(tag => (
-                  <span key={tag} className="text-[11px] font-mono px-2.5 py-1 rounded" style={{ backgroundColor: isDark ? 'rgba(206, 150, 53, 0.08)' : 'rgba(206, 150, 53, 0.12)', color: isDark ? '#CE9635' : '#8a6323' }}>
-                    {tag}
-                  </span>
-                ))}
-              </div>
-
-              <div className="flex flex-wrap gap-4 pt-2">
-                {selectedProject.liveUrl && (
-                  selectedProject.status === 'offline' ? (
-                    <div 
-                      className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider px-4 py-2.5 rounded font-mono border border-dashed cursor-not-allowed select-none"
-                      style={{ 
-                        color: isDark ? '#9ca3af' : '#6b7280',
-                        borderColor: 'rgba(239,68,68,0.4)',
-                        backgroundColor: isDark ? 'rgba(239,68,68,0.06)' : 'rgba(239,68,68,0.05)'
-                      }}
-                      title="Redeploying — check back soon"
-                    >
-                      <span className="relative flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-60"></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-                      </span>
-                      Deployment Offline
-                    </div>
-                  ) : (
-                    <a href={selectedProject.liveUrl} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider px-4 py-2.5 rounded bg-[#CE9635] text-black hover:shadow-[0_0_15px_rgba(206,150,53,0.4)] transition-all font-mono">
-                      <ExternalLink size={14} /> Launch Live Site
-                    </a>
-                  )
-                )}
-                {selectedProject.github && (
-                  <a href={selectedProject.github} target="_blank" rel="noreferrer" className={`flex items-center gap-2 text-xs font-bold uppercase tracking-wider px-4 py-2.5 rounded transition-all font-mono ${isDark ? 'bg-gray-800 text-gray-300 hover:bg-gray-700' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}>
-                    <Github size={14} /> Source Repository
-                  </a>
-                )}
-                <button
-                  onClick={() => { setDocumentationProject(selectedProject); setSelectedProject(null); }}
-                  className={`flex items-center gap-2 text-xs font-bold uppercase tracking-wider px-4 py-2.5 rounded transition-all font-mono cursor-pointer ${isDark ? 'text-[#CE9635] hover:bg-[#CE9635]/10' : 'text-[#8a6323] hover:bg-[#CE9635]/10'}`}
+                <h3 
+                  className="text-md font-bold uppercase tracking-wider flex items-center gap-2"
+                  style={{ fontFamily: "'Courier New', monospace", color: isDark ? '#CE9635' : '#8a6323' }}
                 >
-                  <FileText size={14} /> Read Blueprint Docs
+                  <Terminal size={16} /> COMPONENT_PREVIEW // {selectedProject.id}
+                </h3>
+                <button 
+                  onClick={() => setSelectedProject(null)}
+                  className={`p-1.5 rounded-full transition-colors cursor-pointer ${isDark ? 'text-gray-400 hover:bg-gray-900 hover:text-white' : 'text-gray-600 hover:bg-gray-200 hover:text-black'}`}
+                >
+                  <X size={20} />
                 </button>
+              </div>
+
+              <div className="overflow-y-auto max-h-[calc(90vh-72px)] p-6 sm:p-8 space-y-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+                  {/* Immersive Image Rotator Container */}
+                  <div className="space-y-3">
+                    <div 
+                      className="relative rounded-xl overflow-hidden flex items-center justify-center w-full cursor-pointer group"
+                      style={{ backgroundColor: isDark ? '#121212' : '#ffffff' }}
+                      onClick={() => setIsLightboxOpen(true)}
+                    >
+                      <img 
+                        src={getAssetUrl(selectedProject.images[currentImageIndex])} 
+                        alt={`${selectedProject.title} view`} 
+                        className="w-full h-auto object-contain" 
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20">
+                        <span className="text-white text-xs font-mono bg-black/50 px-3 py-1 rounded">CLICK TO EXPAND</span>
+                      </div>
+                      
+                      {selectedProject.images.length > 1 && (
+                        <>
+                          <button 
+                            onClick={(e) => handlePrevImage(e)}
+                            className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/70 text-white hover:bg-[#CE9635] hover:text-black transition-all cursor-pointer"
+                          >
+                            <ChevronLeft size={16} />
+                          </button>
+                          <button 
+                            onClick={(e) => handleNextImage(e)}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/70 text-white hover:bg-[#CE9635] hover:text-black transition-all cursor-pointer"
+                          >
+                            <ChevronRight size={16} />
+                          </button>
+                          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 px-2.5 py-1 rounded-full bg-black/80 text-[10px] font-mono text-gray-300 tracking-widest">
+                            {currentImageIndex + 1} / {selectedProject.images.length}
+                          </div>
+                        </>
+                      )}
+                    </div>
+
+                    {/* Thumbnails */}
+                    {selectedProject.images.length > 1 && (
+                      <div className="flex gap-2 overflow-x-auto py-1">
+                        {selectedProject.images.map((img, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => setCurrentImageIndex(idx)}
+                            className={`relative w-16 h-12 rounded-lg overflow-hidden flex-shrink-0 transition-all ${currentImageIndex === idx ? 'ring-2 ring-[#CE9635] scale-95' : 'opacity-60 hover:opacity-100'}`}
+                            style={{ backgroundColor: isDark ? '#121212' : '#ffffff' }}
+                          >
+                            <img src={getAssetUrl(img)} alt="" className="w-full h-full object-cover" />
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Demo Access Terminal Panel (supports multiple roles) */}
+                    {selectedProject.demoCredentials && (
+                      <div 
+                        className="rounded-lg border overflow-hidden font-mono"
+                        style={{
+                          borderColor: isDark ? 'rgba(206, 150, 53, 0.25)' : 'rgba(206, 150, 53, 0.4)',
+                          backgroundColor: isDark ? '#0c0c0c' : '#fcfbf8'
+                        }}
+                      >
+                        {/* Terminal title bar */}
+                        <div 
+                          className="flex items-center gap-2 px-4 py-2 border-b"
+                          style={{ 
+                            backgroundColor: isDark ? '#111111' : '#f5f1e8',
+                            borderColor: isDark ? 'rgba(206, 150, 53, 0.15)' : 'rgba(206, 150, 53, 0.25)'
+                          }}
+                        >
+                          <Lock size={12} className="text-[#CE9635]" />
+                          <span className="text-[10px] uppercase tracking-widest text-[#CE9635]">
+                            {selectedProject.demoCredentials.label}
+                          </span>
+                          <span className="ml-auto flex gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-red-500/60" />
+                            <span className="w-2 h-2 rounded-full bg-yellow-500/60" />
+                            <span className="w-2 h-2 rounded-full bg-green-500/60" />
+                          </span>
+                        </div>
+
+                        {/* One block per role */}
+                        <div className="p-4 space-y-4 text-xs">
+                          {selectedProject.demoCredentials.accounts.map((account) => (
+                            <div key={account.role} className="space-y-1.5">
+                              <div 
+                                className="text-[10px] uppercase tracking-widest text-[#CE9635]"
+                              >
+                                [{account.role}]
+                              </div>
+                              {[
+                                { key: `${account.role}-id`, label: account.identifierLabel, value: account.identifier },
+                                { key: `${account.role}-pw`, label: 'passwd', value: account.password }
+                              ].map(({ key, label, value }) => (
+                                <div 
+                                  key={key}
+                                  onClick={() => handleCopyCredential(value, key)}
+                                  className="flex items-center justify-between gap-3 px-3 py-2 rounded cursor-pointer group/row transition-colors"
+                                  style={{ backgroundColor: isDark ? '#141414' : '#ffffff' }}
+                                >
+                                  <span className="break-all" style={{ color: isDark ? '#6b7280' : '#9ca3af' }}>
+                                    $ {label} ={' '}
+                                    <span style={{ color: isDark ? '#e5e7eb' : '#111111' }}>{value}</span>
+                                  </span>
+                                  {copiedField === key ? (
+                                    <Check size={13} className="text-green-500 flex-shrink-0" />
+                                  ) : (
+                                    <Copy 
+                                      size={13} 
+                                      className="text-gray-500 group-hover/row:text-[#CE9635] transition-colors flex-shrink-0" 
+                                    />
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          ))}
+                        </div>
+
+                        <div 
+                          className="px-4 py-1.5 text-[9px] uppercase tracking-widest border-t"
+                          style={{ 
+                            color: isDark ? '#6b7280' : '#9ca3af',
+                            borderColor: isDark ? 'rgba(206, 150, 53, 0.1)' : 'rgba(206, 150, 53, 0.15)'
+                          }}
+                        >
+                          // demo access only · click a line to copy
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Details Panel */}
+                  <div className="space-y-6">
+                    <div>
+                      <div className="flex flex-wrap items-center gap-3">
+                        <span className="text-[10px] font-mono uppercase tracking-widest text-[#CE9635]">[{selectedProject.category}]</span>
+                        {selectedProject.status && (
+                          <span 
+                            className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-widest"
+                            style={{ color: STATUS_STYLES[selectedProject.status].color }}
+                          >
+                            <span className="relative flex h-1.5 w-1.5">
+                              {STATUS_STYLES[selectedProject.status].ping && (
+                                <span 
+                                  className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
+                                  style={{ backgroundColor: STATUS_STYLES[selectedProject.status].color }}
+                                ></span>
+                              )}
+                              <span 
+                                className="relative inline-flex rounded-full h-1.5 w-1.5"
+                                style={{ backgroundColor: STATUS_STYLES[selectedProject.status].color }}
+                              ></span>
+                            </span>
+                            {STATUS_STYLES[selectedProject.status].label}
+                          </span>
+                        )}
+                      </div>
+                      <h4 className="text-2xl font-bold tracking-tight mt-1" style={{ fontFamily: "'Courier New', monospace", color: isDark ? '#ffffff' : '#000000' }}>
+                        {selectedProject.title}
+                      </h4>
+                    </div>
+                    <p className="text-sm leading-relaxed" style={{ color: isDark ? '#d1d5db' : '#222222' }}>{selectedProject.details}</p>
+                    
+                    <div className="flex flex-wrap gap-2">
+                      {selectedProject.tags.map(tag => (
+                        <span key={tag} className="text-[11px] font-mono px-2.5 py-1 rounded" style={{ backgroundColor: isDark ? 'rgba(206, 150, 53, 0.08)' : 'rgba(206, 150, 53, 0.12)', color: isDark ? '#CE9635' : '#8a6323' }}>
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+
+                    <div className="flex flex-wrap gap-4 pt-2">
+                      {selectedProject.liveUrl && (
+                        selectedProject.status === 'offline' ? (
+                          <div 
+                            className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider px-4 py-2.5 rounded font-mono border border-dashed cursor-not-allowed select-none"
+                            style={{ 
+                              color: isDark ? '#9ca3af' : '#6b7280',
+                              borderColor: 'rgba(239,68,68,0.4)',
+                              backgroundColor: isDark ? 'rgba(239,68,68,0.06)' : 'rgba(239,68,68,0.05)'
+                            }}
+                            title="Redeploying — check back soon"
+                          >
+                            <span className="relative flex h-2 w-2">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-60"></span>
+                              <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                            </span>
+                            Deployment Offline
+                          </div>
+                        ) : (
+                          <a href={selectedProject.liveUrl} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider px-4 py-2.5 rounded bg-[#CE9635] text-black hover:shadow-[0_0_15px_rgba(206,150,53,0.4)] transition-all font-mono">
+                            <ExternalLink size={14} /> {selectedProject.status === 'static' ? 'View Static Site' : 'Launch Live Site'}
+                          </a>
+                        )
+                      )}
+                      {selectedProject.github && (
+                        <a href={selectedProject.github} target="_blank" rel="noreferrer" className={`flex items-center gap-2 text-xs font-bold uppercase tracking-wider px-4 py-2.5 rounded transition-all font-mono ${isDark ? 'bg-gray-800 text-gray-300 hover:bg-gray-700' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}>
+                          <Github size={14} /> Source Repository
+                        </a>
+                      )}
+                      <button
+                        onClick={() => { setDocumentationProject(selectedProject); setSelectedProject(null); }}
+                        className={`flex items-center gap-2 text-xs font-bold uppercase tracking-wider px-4 py-2.5 rounded transition-all font-mono cursor-pointer ${isDark ? 'text-[#CE9635] hover:bg-[#CE9635]/10' : 'text-[#8a6323] hover:bg-[#CE9635]/10'}`}
+                      >
+                        <FileText size={14} /> Read Blueprint Docs
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
 
-    {/* Lightbox Overlay */}
-    {isLightboxOpen && (
-      <div className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4 animate-fadeIn" onClick={() => setIsLightboxOpen(false)}>
-        <button className="absolute top-6 right-6 text-white p-2 hover:text-[#CE9635] z-10" onClick={(e) => { e.stopPropagation(); setIsLightboxOpen(false); }}>
-          <X size={32} />
-        </button>
+          {/* Lightbox Overlay */}
+          {isLightboxOpen && (
+            <div className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4 animate-fadeIn" onClick={() => setIsLightboxOpen(false)}>
+              <button className="absolute top-6 right-6 text-white p-2 hover:text-[#CE9635] z-10" onClick={(e) => { e.stopPropagation(); setIsLightboxOpen(false); }}>
+                <X size={32} />
+              </button>
 
-        {/* Lightbox Navigation */}
-        {selectedProject.images.length > 1 && (
-          <>
-            <button 
-              onClick={(e) => handlePrevImage(e)}
-              className="absolute left-4 p-3 rounded-full bg-white/10 text-white hover:bg-[#CE9635] hover:text-black transition-all z-10"
-            >
-              <ChevronLeft size={32} />
-            </button>
-            <button 
-              onClick={(e) => handleNextImage(e)}
-              className="absolute right-4 p-3 rounded-full bg-white/10 text-white hover:bg-[#CE9635] hover:text-black transition-all z-10"
-            >
-              <ChevronRight size={32} />
-            </button>
-            <div className="absolute bottom-6 text-white font-mono text-sm bg-black/50 px-4 py-2 rounded-full pointer-events-none">
-              {currentImageIndex + 1} / {selectedProject.images.length}
+              {/* Lightbox Navigation */}
+              {selectedProject.images.length > 1 && (
+                <>
+                  <button 
+                    onClick={(e) => handlePrevImage(e)}
+                    className="absolute left-4 p-3 rounded-full bg-white/10 text-white hover:bg-[#CE9635] hover:text-black transition-all z-10"
+                  >
+                    <ChevronLeft size={32} />
+                  </button>
+                  <button 
+                    onClick={(e) => handleNextImage(e)}
+                    className="absolute right-4 p-3 rounded-full bg-white/10 text-white hover:bg-[#CE9635] hover:text-black transition-all z-10"
+                  >
+                    <ChevronRight size={32} />
+                  </button>
+                  <div className="absolute bottom-6 text-white font-mono text-sm bg-black/50 px-4 py-2 rounded-full pointer-events-none">
+                    {currentImageIndex + 1} / {selectedProject.images.length}
+                  </div>
+                </>
+              )}
+
+              <img 
+                key={currentImageIndex}
+                src={getAssetUrl(selectedProject.images[currentImageIndex])} 
+                alt="Expanded view" 
+                className="max-w-full max-h-[90vh] object-contain shadow-2xl transition-all duration-300 rounded-2xl"
+                onClick={(e) => e.stopPropagation()} 
+              />
             </div>
-          </>
-        )}
-
-        <img 
-          key={currentImageIndex}
-          src={getAssetUrl(selectedProject.images[currentImageIndex])} 
-          alt="Expanded view" 
-          className="max-w-full max-h-[90vh] object-contain shadow-2xl transition-all duration-300 rounded-2xl"
-          onClick={(e) => e.stopPropagation()} 
-        />
-      </div>
-    )}
-  </>
-)}
+          )}
+        </>
+      )}
 
       {/* Structural Infrastructure System Documentation Overlay Sheet */}
       {documentationProject && (
