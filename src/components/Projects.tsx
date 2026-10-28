@@ -417,7 +417,7 @@ const PROJECTS: Project[] = [
     images: ['109.png', '110.png', '111.png', '112.png', '113.png', '114.png', '115.png', '116.png', '117.png', '118.png', '119.png', '120.png', '121.png', '122.png', '123.png'],
     tags: ['E-Commerce Grid', 'Merchandise UI', 'Sports Branding'],
     liveUrl: 'https://spu-united.netlify.app/',
-    status: 'live',
+    status: 'static',
     gridSpan: 'small',
     documentation: {
       overview: 'A conversion-focused merchandise layout built to capture fan engagement and translate club loyalty into retail sales. Combines striking atmospheric branding with a highly legible catalog structure.',
